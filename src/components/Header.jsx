@@ -1,6 +1,6 @@
 import React from "react";
 import Logo from "../assets/magicbricks-logo.png";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Header() {
   const location = useLocation();
@@ -13,7 +13,7 @@ export default function Header() {
   return (
     <div>
       <header>
-        <div className="flex items-center justify-between h-16 overflow-hidden bg-zinc-100 border-b shadow-md z-50 top-0 sticky">
+        <div className="flex items-center justify-between h-20 overflow-hidden bg-zinc-100 border-b shadow-md z-50 top-0 sticky">
           <div>
             <img
               src={Logo}
@@ -22,29 +22,26 @@ export default function Header() {
               onClick={() => navigate("/")}
             />
           </div>
-          <ul className=" lg:mr-24 sm:mr-12 flex">
+          <ul className=" lg:mr-24 sm:mr-12 flex space-x-10">
             <li
-              className={`mx-4 cursor-pointer text-base font-semibold text-gray-400 hover:text-gray-600 transition-all border-b-[3px] border-b-transparent ${
-                pathMatchRoute("/") &&
-                "text-black hover:text-black border-b-red-500"
+              className={`cursor-pointer py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${
+                pathMatchRoute("/") && "text-zinc-950 transition-all border-b-red-600"
               }`}
               onClick={() => navigate("/")}
             >
               Home
             </li>
             <li
-              className={`mx-4 cursor-pointer text-base font-semibold text-gray-400 hover:text-gray-600 transition-all border-b-[3px] border-b-transparent ${
-                pathMatchRoute("/offers") &&
-                "text-black hover:text-black border-b-red-500"
-              }` }
+              className={`cursor-pointer py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${
+                pathMatchRoute("/offers") && "text-zinc-950 transition-all border-b-red-600"
+              }`}
               onClick={() => navigate("/offers")}
             >
               Offers
             </li>
             <li
-              className={`mx-4 cursor-pointer text-base font-semibold hover:text-gray-600 transition-all text-gray-400 border-b-[3px] border-b-transparent ${
-                pathMatchRoute("/profile") &&
-                "text-black hover:text-black border-b-red-500"
+              className={`cursor-pointer py-3 text-sm font-semibold transition-all text-gray-400 border-b-[3px] border-b-transparent ${
+                pathMatchRoute("/profile") && "text-zinc-950 transition-all border-b-red-600"
               }`}
               onClick={() => navigate("/profile")}
             >

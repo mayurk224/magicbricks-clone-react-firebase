@@ -13,40 +13,14 @@ export default function Header() {
   return (
     <div>
       <header>
-        <div className="flex items-center justify-between h-20 overflow-hidden bg-zinc-100 border-b shadow-md z-50 top-0 sticky">
-          <div>
-            <img
-              src={Logo}
-              alt=""
-              className="h-48 w-auto lg:ml-24 sm:ml-12"
-              onClick={() => navigate("/")}
-            />
+        <div className="flex items-center justify-between h-[70px] bg-slate-400 shadow-md border-b sticky top-0 rounded-b-3xl">
+          <div className="lg:ml-10 sm:ml-5 overflow-hidden">
+            <img src={Logo} alt="" onClick={() => navigate("/")} className="lg:h-56 sm:h-44 overflow-hidden"/>
           </div>
-          <ul className=" lg:mr-24 sm:mr-12 flex space-x-10">
-            <li
-              className={`cursor-pointer py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${
-                pathMatchRoute("/") && "text-zinc-950 transition-all border-b-red-600"
-              }`}
-              onClick={() => navigate("/")}
-            >
-              Home
-            </li>
-            <li
-              className={`cursor-pointer py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${
-                pathMatchRoute("/offers") && "text-zinc-950 transition-all border-b-red-600"
-              }`}
-              onClick={() => navigate("/offers")}
-            >
-              Offers
-            </li>
-            <li
-              className={`cursor-pointer py-3 text-sm font-semibold transition-all text-gray-400 border-b-[3px] border-b-transparent ${
-                pathMatchRoute("/profile") && "text-zinc-950 transition-all border-b-red-600"
-              }`}
-              onClick={() => navigate("/profile")}
-            >
-              Profile
-            </li>
+          <ul className="lg:mr-10 sm:mr-5 flex space-x-5">
+            <li onClick={() => navigate("/")} className={`text-base font-semibold text-gray-600 cursor-pointer  hover:text-zinc-800 transition-all  ${pathMatchRoute("/")&&"text-zinc-900 transition-all"}`}>Home</li>
+            <li onClick={() => navigate("/offers")} className={`text-base font-semibold text-gray-600 cursor-pointer  hover:text-zinc-800 transition-all  ${pathMatchRoute("/offers")&&"text-zinc-900 transition-all"}`}>Offers</li>
+            <li onClick={() => navigate("/profile")} className={`text-base font-semibold text-gray-600 cursor-pointer  hover:text-zinc-800 transition-all  ${pathMatchRoute("/profile")&&"text-zinc-900 transition-all"}`}>Profile</li>
           </ul>
         </div>
       </header>

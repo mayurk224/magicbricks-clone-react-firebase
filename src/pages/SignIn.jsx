@@ -1,8 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { toast } from "react-toastify";
 
 export default function SignIn() {
+  const navigate = useNavigate()
   const myStyle = {
     backgroundImage:
       "url('https://images.pexels.com/photos/18578343/pexels-photo-18578343/free-photo-of-a-woman-in-a-white-dress-and-hat-walking-through-a-field.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load')",
@@ -24,9 +27,21 @@ export default function SignIn() {
       [e.target.id]: e.target.value,
     }));
   }
+  async function onSubmit(e) {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      if (userCredential.user) {
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error("Cant authorise user");
+    }
+  }
   return (
     <div className="flex justify-center items-center" style={myStyle}>
-      <form className="w-96 flex flex-col bg-white p-10 rounded-2xl">
+      <form onSubmit={onSubmit} className="w-96 flex flex-col bg-white p-10 rounded-2xl">
         <div className="mb-4">
           <h1 className="text-3xl text-center font-semibold">
             Sign in to your account

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import { toast } from "react-toastify";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 
 export default function ForgotPassword() {
   const myStyle = {
@@ -16,9 +18,19 @@ export default function ForgotPassword() {
   function onChange(e) {
     setEmail(e.target.value);
   }
+  async function onSubmit(e) {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth,email);
+      toast.success("Reset link sent to your email");
+    } catch (error) {
+      toast.error("Error occured while sending email");
+    }
+  }
   return (
     <div className="flex justify-center items-center" style={myStyle}>
-      <form className="w-96 flex flex-col bg-white p-10 rounded-2xl">
+      <form onSubmit={onSubmit} className="w-96 flex flex-col bg-white p-10 rounded-2xl">
         <div className="mb-4">
           <h1 className="text-3xl text-center font-semibold">
             Forgot Password

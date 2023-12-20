@@ -1,6 +1,10 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {db} from "../firebase";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { toast } from "react-toastify";
 
 export default function SignUn() {
   const myStyle = {
@@ -19,15 +23,37 @@ export default function SignUn() {
     password: "",
   });
   const { name,email, password } = formData;
+  const navigate = useNavigate();
   function onChange(e) {
     setFormData((prevState) => ({
       ...prevState,
       [e.target.id]: e.target.value,
     }));
   }
+  async function onSubmit(e) {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(auth,email,password);
+      updateProfile(auth.currentUser,{
+        displayName:name
+      })
+      const user = userCredential.user;
+      const formDataCopy = {
+        ...formData,
+      }
+      delete formDataCopy.password;
+      formDataCopy.timestamp = serverTimestamp();
+      await setDoc(doc(db,"users",user.uid),formDataCopy);
+      navigate("/");
+      
+    } catch (error) {
+      toast.error("Something went wrong")
+    }
+  }
   return (
     <div className="flex justify-center items-center" style={myStyle}>
-      <form className="w-96 flex flex-col bg-white p-10 rounded-2xl">
+      <form onSubmit={onSubmit} className="w-96 flex flex-col bg-white p-10 rounded-2xl">
         <div className="mb-4">
           <h1 className="text-3xl text-center font-semibold">
             Register your account

@@ -1,10 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Logo from "../assets/magicbricks-logo.png";
 import { useLocation, useNavigate } from "react-router-dom";
+import {getAuth, onAuthStateChanged} from "firebase/auth"
 
 export default function Header() {
+  const [pageState,setPageState] = useState("Sign In");
   const location = useLocation();
   const navigate = useNavigate();
+  const auth = getAuth();
+  useEffect(()=>{
+    onAuthStateChanged(auth,(user)=>{
+      if(user){
+        setPageState("Profile");
+      }else{
+        setPageState("Sign In");
+      }
+    })
+  },[auth])
   function pathMatchRoute(route) {
     if (route === location.pathname) {
       return true;
@@ -20,7 +32,7 @@ export default function Header() {
           <ul className="lg:mr-10 sm:mr-5 flex space-x-5">
             <li onClick={() => navigate("/")} className={`text-base font-semibold text-gray-600 cursor-pointer  hover:text-zinc-800 transition-all  ${pathMatchRoute("/")&&"text-zinc-900 transition-all"}`}>Home</li>
             <li onClick={() => navigate("/offers")} className={`text-base font-semibold text-gray-600 cursor-pointer  hover:text-zinc-800 transition-all  ${pathMatchRoute("/offers")&&"text-zinc-900 transition-all"}`}>Offers</li>
-            <li onClick={() => navigate("/profile")} className={`text-base font-semibold text-gray-600 cursor-pointer  hover:text-zinc-800 transition-all  ${pathMatchRoute("/profile")&&"text-zinc-900 transition-all"}`}>Profile</li>
+            <li onClick={() => navigate("/profile")} className={`text-base font-semibold text-gray-600 cursor-pointer  hover:text-zinc-800 transition-all  ${(pathMatchRoute("/sign-in") || pathMatchRoute("/profile")) &&"text-zinc-900 transition-all"}`}>{pageState}</li>
           </ul>
         </div>
       </header>

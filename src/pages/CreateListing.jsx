@@ -1,6 +1,18 @@
 import React, { useState } from "react";
+import Spinner from "../components/Spinner";
+import { toast } from "react-toastify";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getAuth } from "firebase/auth";
+import { v4 as uuidv4 } from "uuid";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
+import { useNavigate } from "react-router";
 
 export default function CreateListing() {
+  const navigate = useNavigate();
+  // const [geoLocationEnabled, setGeoLocationEnabled] = useState(true);
+  const auth = getAuth();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
@@ -13,6 +25,9 @@ export default function CreateListing() {
     offers: true,
     price: 0,
     discount: 0,
+    // latitude: 0,
+    // longitude: 0,
+    images: {},
   });
   const {
     type,
@@ -26,11 +41,135 @@ export default function CreateListing() {
     description,
     price,
     discount,
+    // latitude,
+    // longitude,
+    images,
   } = formData;
-  function onChange(e) {}
+  function onChange(e) {
+    let boolean = null;
+    if (e.target.value === "true") {
+      boolean = true;
+    }
+    if (e.target.value === "false") {
+      boolean = false;
+    }
+    if (e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        images: e.target.files,
+      }));
+    }
+    if (!e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [e.target.id]: boolean ?? e.target.value,
+      }));
+    }
+  }
+  async function onSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    if (+discount >= +price) {
+      setLoading(false);
+      toast.error("Discount cant be greater than Price");
+      return;
+    }
+    if (images.length > 6) {
+      setLoading(false);
+      toast.error("Please Select Only 6 images");
+      return;
+    }
+    //This code is to fetch and display data in form of map onSite
+    // let geoLocation = {};
+    // let location;
+    // if (geoLocationEnabled) {
+    //   const response = await fetch(
+    //     `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
+    //   );
+    //   const data = await response.json();
+    //   console.log(data);
+    //   geoLocation.lat = data.result[0]?.geometry.location.lat ?? 0;
+    //   geoLocation.lng = data.result[0]?.geometry.location.lng ?? 0;
+    //   location = data.status === "ZERO_RESULTS" && undefined;
+    //   if (location === undefined ) {
+    //     setLoading(false);
+    //     toast.error("Please Enter correct address");
+    //     return;
+    //   }
+    // } else {
+    //   geoLocation.lat = latitude;
+    //   geoLocation.lan = longitude;
+    // }
+    function storeImage(image) {
+      return new Promise((resolve, reject) => {
+        const storage = getStorage();
+        const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
+        const storageRef = ref(storage, filename);
+        const uploadTask = uploadBytesResumable(storageRef, image);
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload is " + progress + "% done");
+            switch (snapshot.state) {
+              case "paused":
+                console.log("Upload is paused");
+                break;
+              case "running":
+                console.log("Upload is running");
+                break;
+            }
+          },
+          (error) => {
+            reject(error);
+          },
+          () => {
+            // Upload completed successfully, now we can get the download URL
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              resolve(downloadURL);
+            });
+          }
+        );
+      });
+    }
+    const imgUrls = await Promise.all(
+      [...images].map(async (image) => {
+        try {
+          return await storeImage(image);
+        } catch (error) {
+          console.error(`Error uploading image: ${image.name}`, error);
+          throw error; // Rethrow the error to be caught by the outer catch block
+        }
+      })
+    ).catch((error) => {
+      setLoading(false);
+      toast.error("Some images failed to upload");
+      return;
+    });
+    const formDataCopy = {
+      ...formData,
+      imgUrls,//geoLocation,
+      timestamp: serverTimestamp(),
+    }
+    delete formDataCopy.images;
+    !formDataCopy.offers && delete formDataCopy.discount;
+    const docRef = await addDoc(collection(db, "listings"), formDataCopy);
+    setLoading(false);
+    toast.success("Listing created");
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`);
+  }
+
+  if (loading) {
+    return <Spinner />;
+  }
   return (
     <div className="flex items-center justify-center">
-      <form className="p-8 flex flex-col lg:w-[500px] sm:w-96 gap-3">
+      <form
+        onSubmit={onSubmit}
+        className="p-8 flex flex-col lg:w-[500px] sm:w-96 gap-3"
+      >
         <label className="text-3xl font-semibold">Create a Listing</label>
         <div className="flex flex-col gap-2 mt-5">
           <label className="text-2xl font-semibold">Sell / Rent</label>
@@ -51,7 +190,7 @@ export default function CreateListing() {
             <button
               type="button"
               id="type"
-              value="sell"
+              value="rent"
               onClick={onChange}
               className={`px-10 py-1  rounded-2xl  ${
                 type === "sell"
@@ -175,6 +314,39 @@ export default function CreateListing() {
             placeholder="Address"
             required
           ></textarea>
+          {/* This Section is to enable geo location map onSite
+           {!geoLocationEnabled && (
+            <div className="flex justify-evenly">
+              <div className="flex flex-col items-center">
+                <label className="text-2xl font-semibold">Latitude</label>
+                <input
+                  type="number"
+                  name=""
+                  id="latitude"
+                  value={latitude}
+                  onChange={onChange}
+                  required
+                  min="-90"
+                  max="90"
+                  className="rounded-3xl w-32 text-center"
+                />
+              </div>
+              <div className="flex items-center flex-col">
+                <label className="text-2xl font-semibold">Longitude</label>
+                <input
+                  type="number"
+                  name=""
+                  id="longitude"
+                  value={longitude}
+                  onChange={onChange}
+                  required
+                  min="-180"
+                  max="180"
+                  className="rounded-3xl w-32 text-center"
+                />
+              </div>
+            </div>
+          )} */}
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-2xl font-semibold">Description</label>
@@ -268,14 +440,12 @@ export default function CreateListing() {
             accept=".jpg,.png,.jpeg"
           />
         </div>
-        
-          <button
-            type="submit"
-            className="bg-blue-600 w-full rounded-3xl py-2 mt-7 text-white"
-          >
-            Create Listing
-          </button>
-        
+        <button
+          type="submit"
+          className="bg-blue-600 w-full rounded-3xl py-2 mt-7 text-white"
+        >
+          Create Listing
+        </button>
       </form>
     </div>
   );

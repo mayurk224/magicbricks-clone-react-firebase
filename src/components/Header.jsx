@@ -25,7 +25,7 @@ export default function Header() {
   return (
     <div>
       <header>
-        <div className="flex items-center justify-between h-[70px] bg-slate-400 shadow-md border-b sticky top-0 rounded-b-3xl">
+        <div className="flex items-center justify-between h-[70px] bg-slate-400 shadow-md border-b sticky z-40 top-0 rounded-b-3xl">
           <div className="lg:ml-10 sm:ml-5 overflow-hidden">
             <img src={Logo} alt="" onClick={() => navigate("/")} className="lg:h-56 sm:h-44 overflow-hidden"/>
           </div>

@@ -9,12 +9,12 @@ import Moment from "react-moment";
 import { MdOutlinePayments } from "react-icons/md";
 import { PiSignpostBold } from "react-icons/pi";
 
-export default function ListingItem({ listing, id }) {
+export default function ListingItem({ listing, id, onDelete, onEdit }) {
   return (
-    <li>
+    <li className="relative w-72 h-auto">
       <Link
         to={`/category/${listing.type}/${id}`}
-        className="ListingCard w-72 h-auto flex flex-col p-3 rounded-2xl bg-white hover:shadow-2xl"
+        className="ListingCard  flex flex-col p-3 rounded-2xl bg-white hover:shadow-2xl"
       >
         <div className="border-yellow-700 relative imageDiv">
           <Moment
@@ -35,7 +35,7 @@ export default function ListingItem({ listing, id }) {
               }`}
             />
           </label>
-          <img src={listing.imgUrls[0]} alt="" className="rounded-lg " />
+          <img src={listing.imgUrls[0]} alt="" className="rounded-lg h-[170px] object-cover " />
         </div>
         <div className="ListingDetails pt-2 pb-1">
           <div className="flex items-center gap-2">
@@ -43,7 +43,9 @@ export default function ListingItem({ listing, id }) {
               <FaMapLocationDot />
             </div>
             <div className="flex w-[240px]">
-              <label className="text-gray-600 truncate">{listing.address}</label>
+              <label className="text-gray-600 truncate">
+                {listing.address}
+              </label>
             </div>
           </div>
           <div>
@@ -72,13 +74,15 @@ export default function ListingItem({ listing, id }) {
                 {listing.bedrooms > 1 ? `${listing.bedrooms} Beds` : "1 Bed"}
               </label>
             </div>
-            <div className="flex items-center gap-2">
-              <MdEditNote className="text-2xl cursor-pointer" />
-              <MdDeleteSweep className="text-xl cursor-pointer text-red-600" />
-            </div>
           </div>
         </div>
       </Link>
+      {onDelete && (
+        <MdDeleteSweep onClick={()=>onDelete(listing.id)} className="text-xl absolute bottom-5 right-4 cursor-pointer text-red-600" />
+      )}
+      {onDelete && (
+        <MdEditNote  onClick={()=>onEdit(listing.id)} className="text-2xl absolute bottom-4 right-10 cursor-pointer" />
+      )}
     </li>
   );
 }

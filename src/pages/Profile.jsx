@@ -3,7 +3,7 @@ import { getAuth, updateProfile } from "firebase/auth";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { db } from "../firebase";
-import { updateDoc, doc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { updateDoc, doc, collection, getDocs, query, where, orderBy, deleteDoc } from "firebase/firestore";
 import { FcHome } from "react-icons/fc";
 import { Link } from "react-router-dom";
 import ListingItem from "../components/ListingItem";
@@ -68,7 +68,18 @@ export default function Profile() {
     }
     fetchUserListings();
   }, [auth.currentUser.uid]);
-
+  function onDelete(listingID){
+    if(window.confirm("Are You sure you want to delete ?")){
+      const listingRef = doc(db,"listings", listingID);
+      deleteDoc(listingRef).then(()=>{
+        setListings(listings.filter((listing) => listing.id!== listingID))
+      })
+      toast.success("Listing Deleted")
+    }
+  }
+  function onEdit(listingID){
+    navigate(`/edit-listing/${listingID}`)
+  }
   return (
     <div className="flex items-center flex-col justify-center">
       <form className="flex flex-col items-center justify-center lg:w-[450px] sm:w-[350px] py-7 gap-5">
@@ -112,18 +123,21 @@ export default function Profile() {
           Sell or Rent Your Home
         </Link>
       </button>
-      <div className="mt-8 flex flex-col justify-center items-center">
+      <div className="py-8 flex flex-col justify-center items-center">
       {!loading && listings.length > 0 && (
-          <>
+          <div>
             <label className="text-2xl text-center font-semibold mb-6">
               My Listings
             </label>
             <ul className="flex gap-4 flex-wrap justify-center">
               {listings.map((listing)=>(
-                <ListingItem key={listing.id}id={listing.id} listing={listing.data}/>
+                <ListingItem key={listing.id}id={listing.id} listing={listing.data}
+                onDelete={()=>onDelete(listing.id)}
+                onEdit={()=>onEdit(listing.id)}
+                />
               ))}
             </ul>
-          </>
+          </div>
         )}
       </div>
     </div>

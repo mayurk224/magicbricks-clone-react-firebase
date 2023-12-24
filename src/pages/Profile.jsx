@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getAuth, updateProfile } from "firebase/auth";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { db } from "../firebase";
-import { updateDoc, doc } from "firebase/firestore";
+import { updateDoc, doc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { FcHome } from "react-icons/fc";
 import { Link } from "react-router-dom";
+import ListingItem from "../components/ListingItem";
 
 export default function Profile() {
+  const [listings, setListings] = useState(null);
+  const [loading, setLoading] = useState(true);
   const auth = getAuth();
   const navigate = useNavigate();
   const [changeDetails, setChangeDetail] = useState(false);
@@ -44,6 +47,28 @@ export default function Profile() {
       toast.error("Can't submit");
     }
   }
+  useEffect(() => {
+    async function fetchUserListings() {
+      const listingRef = collection(db, "listings");
+      const q = query(
+        listingRef,
+        where("userRef", "==", auth.currentUser.uid),
+        orderBy("timestamp", "desc")
+      );
+      const querySnap = await getDocs(q);
+      let listings = [];
+      querySnap.forEach((doc) => {
+        return listings.push({
+          id: doc.id,
+          data: doc.data(),
+        });
+      });
+      setListings(listings);
+      setLoading(false);
+    }
+    fetchUserListings();
+  }, [auth.currentUser.uid]);
+
   return (
     <div className="flex items-center flex-col justify-center">
       <form className="flex flex-col items-center justify-center lg:w-[450px] sm:w-[350px] py-7 gap-5">
@@ -54,14 +79,14 @@ export default function Profile() {
           value={name}
           disabled={!changeDetails}
           onChange={onChange}
-          className={`rounded-xl w-full ${changeDetails && "bg-red-300"}`}
+          className={`rounded-xl text-center w-full ${changeDetails && "bg-red-300"}`}
         />
         <input
           type="email"
           id="email"
           value={email}
           disabled={!changeDetails}
-          className="rounded-xl w-full"
+          className="rounded-xl w-full text-center"
         />
         <div className="flex items-center gap-8">
           <span
@@ -87,6 +112,20 @@ export default function Profile() {
           Sell or Rent Your Home
         </Link>
       </button>
+      <div className="mt-8 flex flex-col justify-center items-center">
+      {!loading && listings.length > 0 && (
+          <>
+            <label className="text-2xl text-center font-semibold mb-6">
+              My Listings
+            </label>
+            <ul className="flex gap-4 flex-wrap justify-center">
+              {listings.map((listing)=>(
+                <ListingItem key={listing.id}id={listing.id} listing={listing.data}/>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
     </div>
   );
 }

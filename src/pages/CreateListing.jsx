@@ -25,6 +25,7 @@ export default function CreateListing() {
     offers: true,
     price: 0,
     discount: 0,
+    addressLink: "",
     // latitude: 0,
     // longitude: 0,
     images: {},
@@ -41,6 +42,7 @@ export default function CreateListing() {
     description,
     price,
     discount,
+    addressLink,
     // latitude,
     // longitude,
     images,
@@ -348,6 +350,19 @@ export default function CreateListing() {
               </div>
             </div>
           )} */}
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="text-2xl font-semibold">Link Address</label>
+          <input
+            type="url"
+            name=""
+            id="addressLink"
+            value={addressLink}
+            onChange={onChange}
+            className="rounded-3xl"
+            placeholder="Link"
+            required
+          />
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-2xl font-semibold">Description</label>
